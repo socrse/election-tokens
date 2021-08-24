@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "election-tokens"
+version = "0.1.0"
+description = "Generate and send out secure election tokens"
+authors = ["James Graham <j.graham@society-rse.org>"]
+license = "MIT"
+
+[tool.poetry.scripts]
+election-tokens = "election_tokens.__main__:cli"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+click = "^8.0.1"
+python-decouple = "^3.4"
+
+[tool.poetry.dev-dependencies]
+yapf = "^0.31.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

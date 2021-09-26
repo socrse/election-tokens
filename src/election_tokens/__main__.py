@@ -1,4 +1,3 @@
-import base64
 import csv
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -6,6 +5,7 @@ import hashlib
 import logging
 import os
 import pathlib
+import random
 import smtplib
 import ssl
 import typing
@@ -62,21 +62,41 @@ def cli():
 
 
 @cli.command()
-@click.option('-f', '--file', 'email_file', type=click.Path(exists=True))
-def generate(email_file: pathlib.Path):
+@click.option('-i', 'email_file', type=click.Path(exists=True))
+@click.option('-o', 'token_file', type=click.Path(exists=False))
+def generate(email_file: pathlib.Path, token_file: pathlib.Path):
     logger.info('Generating tokens')
 
     salt = os.urandom(16)
-    logger.info('Salt: %s', base64.b16encode(salt))
+    logger.info('Salt: %s', salt.hex())
 
-    with open(email_file, 'r') as f:
-        reader = csv.DictReader(f)
+    sender = TemplatedEmail(config('SERVER_ADDRESS'), config('SERVER_PORT'),
+                            config('SENDER_ADDRESS'), config('PASSWORD'),
+                            pathlib.Path('tests', 'data', 'templates'))
+    with sender, open(email_file, 'r') as f_in, open(token_file, 'w') as f_out:
+        # Shuffle list so output tokens list can't be linked
+        rows = list(csv.DictReader(f_in))
+        random.shuffle(rows)
 
-        for row in reader:
-            logger.info('Email: %s', row['email'])
+        for row in rows:
+            address = row['email']
             token = hashlib.pbkdf2_hmac('sha256',
-                                        bytes(row['email'], encoding='utf-8'),
+                                        bytes(address, encoding='utf-8'),
                                         salt,
                                         100000,
                                         dklen=8)
-            logger.info('Token: %s', base64.b16encode(token))
+            token = token.hex()
+
+            context = {
+                'name': row['name'],
+                'token': token,
+                'sender': config('SENDER_NAME')
+            }
+            sender.send(config('EMAIL_TEMPLATE'), context, address,
+                        config('EMAIL_SUBJECT'))
+
+            print(token, file=f_out)
+
+
+if __name__ == '__main__':
+    cli()

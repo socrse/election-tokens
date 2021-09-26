@@ -15,7 +15,7 @@ pip install .
 ## Usage
 
 ```bash
-election-tokens generate -f tests/data/example-voters.csv
+election-tokens generate -i tests/data/example-voters.csv -o tokens.txt
 ```
 
 ## License

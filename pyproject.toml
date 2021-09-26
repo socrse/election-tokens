@@ -12,9 +12,11 @@ election-tokens = "election_tokens.__main__:cli"
 python = "^3.8"
 click = "^8.0.1"
 python-decouple = "^3.4"
+Jinja2 = "^3.0.1"
 
 [tool.poetry.dev-dependencies]
 yapf = "^0.31.0"
+pytest = "^6.2.5"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

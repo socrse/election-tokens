@@ -3,3 +3,7 @@
 
 # Python
 *.pyc
+.python-version
+
+# Config
+settings.ini

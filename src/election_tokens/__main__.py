@@ -64,15 +64,21 @@ def cli():
 @cli.command()
 @click.option('-i', 'email_file', type=click.Path(exists=True))
 @click.option('-o', 'token_file', type=click.Path(exists=False))
-def generate(email_file: pathlib.Path, token_file: pathlib.Path):
+@click.option('--salt', 'salt_hex')
+def generate(email_file: pathlib.Path, token_file: pathlib.Path, salt_hex: typing.Optional[str] = None):
     logger.info('Generating tokens')
 
-    salt = os.urandom(16)
+    if salt_hex is not None:
+        salt = bytes.fromhex(salt_hex)
+    
+    else:
+        salt = os.urandom(16)
+
     logger.info('Salt: %s', salt.hex())
 
     sender = TemplatedEmail(config('SERVER_ADDRESS'), config('SERVER_PORT'),
                             config('SENDER_ADDRESS'), config('PASSWORD'),
-                            pathlib.Path('tests', 'data', 'templates'))
+                            pathlib.Path('templates'))
     with sender, open(email_file, 'r') as f_in, open(token_file, 'w') as f_out:
         # Shuffle list so output tokens list can't be linked
         rows = list(csv.DictReader(f_in))

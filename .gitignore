@@ -2,6 +2,7 @@
 .vscode/
 
 # Python
+notebooks/
 *.pyc
 .python-version
 

@@ -13,32 +13,29 @@ import typing
 import click
 from decouple import config
 import jinja2
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
 
 class TemplatedEmail:
-    def __init__(self, server_address: str, port: int, sender_address: str,
-                 password: str, template_dir: pathlib.Path):
+    def __init__(self, server_address: str, port: int, sender_address: str, password: str,
+                 template_dir: pathlib.Path):
         self.server_address = server_address
         self.port = port
         self.sender_address = sender_address
         self.password = password
 
-        self.template_loader = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(template_dir))
+        self.template_loader = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir))
 
     def __enter__(self):
         ssl_context = ssl.create_default_context()
-        self._connection = smtplib.SMTP_SSL(self.server_address,
-                                            self.port,
-                                            context=ssl_context)
+        self._connection = smtplib.SMTP_SSL(self.server_address, self.port, context=ssl_context)
         self._connection.login(self.sender_address, self.password)
 
         return self
 
-    def send(self, template_name: str, context: typing.Mapping, address: str,
-             subject: str):
+    def send(self, template_name: str, context: typing.Mapping, address: str, subject: str):
         template = self.template_loader.get_template(template_name)
         content = template.render(context)
 
@@ -62,15 +59,56 @@ def cli():
 
 
 @cli.command()
+@click.option('--people', 'people_file', type=click.Path(exists=True))
+@click.option('--subscriptions', 'subs_file', type=click.Path(exists=True))
+@click.option('-o', 'output_file', type=click.Path(exists=False))
+def filter_whitefuse(people_file: pathlib.Path, subs_file: pathlib.Path,
+                     output_file: pathlib.Path):
+    """Filter WhiteFuse exports to build list of valid memberships."""
+    # Get valid memberships from the 'people' export
+    people = pd.read_csv(people_file)
+    valid_statuses = {'Valid', 'Overdue'}
+    members = people[people['Membership 1: Status'].isin(valid_statuses)
+                     | people['Membership 2: Status'].isin(valid_statuses)].copy()
+
+    # Get email addresses marked as primary
+    # Yes this is inefficient, but it's quick enough
+    people_emails = set()
+    for _, row in members.iterrows():
+        for i in range(1, 4):
+            if row[f'Email {i}: Text'] and (row[f'Email {i}: Primary'] == 'Yes'):
+                people_emails.add(row[f'Email {i}: Text'])
+                break
+
+        else:
+            people_emails.add(row['Email 1: Text'])
+
+    # Get valid memberships from the 'subscriptions' export
+    subs = pd.read_csv(subs_file)
+    valid_sub_statuses = {'valid', 'overdue'}
+    valid_subs = subs[subs['Status'].isin(valid_sub_statuses)][['Name', 'Email']].copy()
+
+    # Check that the two approaches match
+    assert set(valid_subs['Email']) == people_emails
+
+    logger.info('Subscriptions matched membership data')
+    logger.info('Found %d valid subscriptions', len(valid_subs))
+    valid_subs.to_csv(output_file, index=False)
+
+
+@cli.command()
 @click.option('-i', 'email_file', type=click.Path(exists=True))
 @click.option('-o', 'token_file', type=click.Path(exists=False))
 @click.option('--salt', 'salt_hex')
-def generate(email_file: pathlib.Path, token_file: pathlib.Path, salt_hex: typing.Optional[str] = None):
+def generate(email_file: pathlib.Path,
+             token_file: pathlib.Path,
+             salt_hex: typing.Optional[str] = None):
+    """Generate and send voting tokens."""
     logger.info('Generating tokens')
 
     if salt_hex is not None:
         salt = bytes.fromhex(salt_hex)
-    
+
     else:
         salt = os.urandom(16)
 
@@ -85,7 +123,7 @@ def generate(email_file: pathlib.Path, token_file: pathlib.Path, salt_hex: typin
         random.shuffle(rows)
 
         for row in rows:
-            address = row['email']
+            address = row['Email']
             token = hashlib.pbkdf2_hmac('sha256',
                                         bytes(address, encoding='utf-8'),
                                         salt,
@@ -93,13 +131,8 @@ def generate(email_file: pathlib.Path, token_file: pathlib.Path, salt_hex: typin
                                         dklen=8)
             token = token.hex()
 
-            context = {
-                'name': row['name'],
-                'token': token,
-                'sender': config('SENDER_NAME')
-            }
-            sender.send(config('EMAIL_TEMPLATE'), context, address,
-                        config('EMAIL_SUBJECT'))
+            context = {'name': row['Name'], 'token': token, 'sender': config('SENDER_NAME')}
+            sender.send(config('EMAIL_TEMPLATE'), context, address, config('EMAIL_SUBJECT'))
 
             print(token, file=f_out)
 

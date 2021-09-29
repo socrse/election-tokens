@@ -8,12 +8,14 @@ import pathlib
 import random
 import smtplib
 import ssl
+import time
 import typing
 
 import click
 from decouple import config
 import jinja2
 import pandas as pd
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -121,8 +123,9 @@ def generate(email_file: pathlib.Path,
         # Shuffle list so output tokens list can't be linked
         rows = list(csv.DictReader(f_in))
         random.shuffle(rows)
+        sent_addresses = []
 
-        for row in rows:
+        for row in tqdm(rows):
             address = row['Email']
             token = hashlib.pbkdf2_hmac('sha256',
                                         bytes(address, encoding='utf-8'),
@@ -135,6 +138,15 @@ def generate(email_file: pathlib.Path,
             sender.send(config('EMAIL_TEMPLATE'), context, address, config('EMAIL_SUBJECT'))
 
             print(token, file=f_out)
+
+            # Save list of sent addresses so we can resume in case of failure
+            # But shuffle each time, so it's not linkable to the token file
+            sent_addresses.append(address)
+            random.shuffle(sent_addresses)
+            with open('checkpoint.txt', 'w') as checkpoint:
+                print('\n'.join(sent_addresses), file=checkpoint)
+
+            time.sleep(2)
 
 
 if __name__ == '__main__':

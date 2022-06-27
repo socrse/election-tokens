@@ -22,10 +22,11 @@ logger = logging.getLogger(__name__)
 
 class TemplatedEmail:
     def __init__(self, server_address: str, port: int, sender_address: str, password: str,
-                 template_dir: pathlib.Path):
+                 sender_name: str, template_dir: pathlib.Path):
         self.server_address = server_address
         self.port = port
         self.sender_address = sender_address
+        self.sender_name = sender_name
         self.password = password
 
         self.template_loader = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir))
@@ -43,7 +44,7 @@ class TemplatedEmail:
 
         message = MIMEMultipart()
         message['Subject'] = subject
-        message['From'] = self.sender_address
+        message['From'] = f'{self.sender_name} <{self.sender_address}>'
         message['To'] = address
 
         message.attach(MIMEText(content, 'html'))
@@ -118,6 +119,7 @@ def generate(email_file: pathlib.Path,
 
     sender = TemplatedEmail(config('SERVER_ADDRESS'), config('SERVER_PORT'),
                             config('SENDER_ADDRESS'), config('PASSWORD'),
+                            config('SENDER_NAME'),
                             pathlib.Path('templates'))
     with sender, open(email_file, 'r') as f_in, open(token_file, 'w') as f_out:
         # Shuffle list so output tokens list can't be linked

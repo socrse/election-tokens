@@ -71,8 +71,8 @@ def filter_whitefuse(people_file: pathlib.Path, subs_file: pathlib.Path,
     # Get valid memberships from the 'people' export
     people = pd.read_csv(people_file)
     valid_statuses = {'Valid', 'Overdue'}
-    members = people[people['Membership 1: Status'].isin(valid_statuses)
-                     | people['Membership 2: Status'].isin(valid_statuses)].copy()
+    members = people[people['Subscription 1: Status'].isin(valid_statuses)
+                     | people['Subscription 2: Status'].isin(valid_statuses)].copy()
 
     # Get email addresses marked as primary
     # Yes this is inefficient, but it's quick enough
@@ -96,7 +96,7 @@ def filter_whitefuse(people_file: pathlib.Path, subs_file: pathlib.Path,
 
     logger.info('Subscriptions matched membership data')
     logger.info('Found %d valid subscriptions', len(valid_subs))
-    valid_subs.to_csv(output_file, index=False)
+    valid_subs.to_csv(output_file, index=False)  # TODO don't overwrite
 
 
 @cli.command()

@@ -125,10 +125,16 @@ def generate(email_file: pathlib.Path,
         # Shuffle list so output tokens list can't be linked
         rows = list(csv.DictReader(f_in))
         random.shuffle(rows)
-        sent_addresses = []
+        try:
+            with open('checkpoint.txt') as checkpoint:
+                sent_addresses = [a.strip() for a in checkpoint.readlines()]
+        except FileNotFoundError:
+            sent_addresses = []
 
         for row in tqdm(rows):
             address = row['Email']
+            if address in sent_addresses:
+                continue
             token = hashlib.pbkdf2_hmac('sha256',
                                         bytes(address, encoding='utf-8'),
                                         salt,

@@ -127,9 +127,9 @@ def generate(email_file: pathlib.Path,
         random.shuffle(rows)
         try:
             with open('checkpoint.txt') as checkpoint:
-                sent_addresses = [a.strip() for a in checkpoint.readlines()]
+                sent_addresses = {a.strip() for a in checkpoint.readlines()}
         except FileNotFoundError:
-            sent_addresses = []
+            sent_addresses = set()
 
         for row in tqdm(rows):
             address = row['Email']
@@ -148,9 +148,7 @@ def generate(email_file: pathlib.Path,
             print(token, file=f_out)
 
             # Save list of sent addresses so we can resume in case of failure
-            # But shuffle each time, so it's not linkable to the token file
-            sent_addresses.append(address)
-            random.shuffle(sent_addresses)
+            sent_addresses.add(address)
             with open('checkpoint.txt', 'w') as checkpoint:
                 print('\n'.join(sent_addresses), file=checkpoint)
 

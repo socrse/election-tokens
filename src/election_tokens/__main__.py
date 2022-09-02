@@ -121,7 +121,7 @@ def generate(email_file: pathlib.Path,
                             config('SENDER_ADDRESS'), config('PASSWORD'),
                             config('SENDER_NAME'),
                             pathlib.Path('templates'))
-    with sender, open(email_file, 'r') as f_in, open(token_file, 'w') as f_out:
+    with sender, open(email_file, 'r') as f_in, open(token_file, 'a') as f_out:
         # Shuffle list so output tokens list can't be linked
         rows = list(csv.DictReader(f_in))
         random.shuffle(rows)

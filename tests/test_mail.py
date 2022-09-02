@@ -24,5 +24,5 @@ def test_send_single():
             'sender': config('SENDER_NAME'),
         }
 
-        sender.send('example-template.j2', context, 'j.graham@software.ac.uk',
+        sender.send('test-template.j2', context, 'matt@milliams.com',
                     'Test election-tokens email')

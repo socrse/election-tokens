@@ -63,40 +63,18 @@ def cli():
 
 @cli.command()
 @click.option('--people', 'people_file', type=click.Path(exists=True))
-@click.option('--subscriptions', 'subs_file', type=click.Path(exists=True))
 @click.option('-o', 'output_file', type=click.Path(exists=False))
-def filter_whitefuse(people_file: pathlib.Path, subs_file: pathlib.Path,
-                     output_file: pathlib.Path):
-    """Filter WhiteFuse exports to build list of valid memberships."""
+def filter_wildapricot(people_file: pathlib.Path, output_file: pathlib.Path):
+    """Filter WildApricot exports to build list of valid memberships."""
     # Get valid memberships from the 'people' export
+    logger.info('Filtering WildApricot people export')
     people = pd.read_csv(people_file)
-    valid_statuses = {'Valid', 'Overdue'}
-    members = people[people['Subscription 1: Status'].isin(valid_statuses)
-                     | people['Subscription 2: Status'].isin(valid_statuses)].copy()
 
-    # Get email addresses marked as primary
-    # Yes this is inefficient, but it's quick enough
-    people_emails = set()
-    for _, row in members.iterrows():
-        for i in range(1, 4):
-            if row[f'Email {i}: Text'] and (row[f'Email {i}: Primary'] == 'Yes'):
-                people_emails.add(row[f'Email {i}: Text'])
-                break
+    valid_statuses = {'Active', 'Pending - New', 'Pending - Renewal'}
+    members = people[people['Membership status'].isin(valid_statuses)].copy()
 
-        else:
-            people_emails.add(row['Email 1: Text'])
-
-    # Get valid memberships from the 'subscriptions' export
-    subs = pd.read_csv(subs_file)
-    valid_sub_statuses = {'valid', 'overdue'}
-    valid_subs = subs[subs['Status'].isin(valid_sub_statuses)][['Name', 'Email']].copy()
-
-    # Check that the two approaches match
-    assert set(valid_subs['Email']) == people_emails
-
-    logger.info('Subscriptions matched membership data')
-    logger.info('Found %d valid subscriptions', len(valid_subs))
-    valid_subs.to_csv(output_file, index=False)  # TODO don't overwrite
+    logger.info('Found %d valid memberships', len(members))
+    members.to_csv(output_file, index=False)  #TODO don't overwrite
 
 
 @cli.command()

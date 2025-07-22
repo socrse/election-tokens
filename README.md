@@ -12,10 +12,10 @@ poetry install
 
 ## Usage
 
-First generate the membership list from WhiteFuse 'people' and 'subscriptions' exports:
+First generate the membership list from WildApricot 'people' exports:
 
 ```bash
-poetry run election-tokens filter-whitefuse --people export-people-2021-09-07.csv --subscriptions export-subscriptions-2021-09-07.csv -o subs.csv
+poetry run election-tokens filter-wildapricot --people export-people-2021-09-07.csv -o subs.csv
 ```
 
 Then copy and fill in the example `settings.ini` file.

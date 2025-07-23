@@ -71,7 +71,12 @@ def filter_wildapricot(people_file: pathlib.Path, output_file: pathlib.Path):
     people = pd.read_csv(people_file)
 
     valid_statuses = {'Active', 'Pending - New', 'Pending - Renewal'}
-    members = people[people['Membership status'].isin(valid_statuses)].copy()
+    # Only keep name and email columns
+    members = people[people['Membership status'].isin(valid_statuses)][['First name', 'Last name', 'Email']]
+
+    # Concat first and last names into a single 'Name' column and keep that and email
+    members['Name'] = members['First name'] + ' ' + members['Last name']
+    members = members[['Name', 'Email']]
 
     logger.info('Found %d valid memberships', len(members))
     members.to_csv(output_file, index=False)  #TODO don't overwrite
@@ -130,7 +135,8 @@ def generate(email_file: pathlib.Path,
             with open('checkpoint.txt', 'w') as checkpoint:
                 print('\n'.join(sent_addresses), file=checkpoint)
 
-            time.sleep(2)
+            # Sleep to avoid rate limiting
+            time.sleep(5)
 
 
 if __name__ == '__main__':

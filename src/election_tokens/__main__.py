@@ -79,7 +79,7 @@ def filter_wildapricot(people_file: pathlib.Path, output_file: pathlib.Path):
     members = members[['Name', 'Email']]
 
     logger.info('Found %d valid memberships', len(members))
-    members.to_csv(output_file, index=False)  #TODO don't overwrite
+    members.to_csv(output_file, index=False, encoding='utf-16')  #TODO don't overwrite
 
 
 @cli.command()

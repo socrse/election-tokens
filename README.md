@@ -15,7 +15,7 @@ poetry install
 First generate the membership list from WildApricot 'people' exports:
 
 ```bash
-poetry run election-tokens filter-wildapricot --people export-people-2021-09-07.csv -o subs.csv
+poetry run election-tokens filter-wildapricot --people members.csv -o subs.csv
 ```
 
 Then copy and fill in the example `settings.ini` file.
@@ -32,6 +32,15 @@ Finally generate and send tokens for each address in the membership list:
 ```bash
 poetry run election-tokens generate -i subs.csv -o tokens.txt
 ```
+
+## Additional Notes
+
+### checkpoint.txt
+
+This file will be used to track the last processed email address. In the event of an error,
+or rate limiting from the email server, you can resume sending tokens from the last processed address.
+
+When testing the application, remember to delete `checkpoint.txt` to start from the beginning.
 
 ## License
 

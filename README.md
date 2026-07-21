@@ -2,6 +2,10 @@
 
 This tool is used to generate secure tokens for voter verification in elections.
 
+## Prerequisites
+
+The tool requires `python` and uses the [Poetry](https://python-poetry.org/docs/#installation) package manager.
+
 ## Install
 
 ```bash

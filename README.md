@@ -16,7 +16,8 @@ poetry install
 
 ## Usage
 
-Generating the election tokens is a two-step process.
+Generating the election tokens is a two-step process. The following steps have been tested
+on Windows.
 
 ### Step 1: Preparing the Membership Data
 
@@ -29,6 +30,7 @@ First, export the membership list from WildApricot.
 This will generate and download an XLS file with all the members' details in it.
 
 - Open the XLS file in Excel and save it as a CSV file.
+  - **Make sure to export it as `CSV UTF-8 (Comma delimited)` format.**
 - Copy the CSV file into the `data` folder.
 - Rename it to something like `members.csv` for simplicity 
 

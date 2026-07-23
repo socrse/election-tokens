@@ -48,25 +48,39 @@ tokens and send out the emails.
 
 Then copy and fill in the example `settings.ini` file.
 The missing values are the email address and name of the sender, and an email password.
-To generate an email password, see the Google documentation on [Using the Gmail SMTP server](https://support.google.com/a/answer/176600#zippy=%2Cuse-the-gmail-smtp-server).
+To generate an email password, see the Google documentation on
+[Using the Gmail SMTP server](https://support.google.com/a/answer/176600#zippy=%2Cuse-the-gmail-smtp-server).
 
 ```bash
 cp example-settings.ini settings.ini
 nano settings.ini
 ```
 
-Finally, generate and send tokens for each address in the membership list:
+#### Testing
+
+#### Sending the Emails
+
+Finally, when you've tested everything and are ready to hit go, use the following command to
+generate and send tokens for each address in the membership list:
 
 ```bash
-poetry run election-tokens generate -i subs.csv -o tokens.txt
+poetry run election-tokens generate -i data/subs.csv -o data/tokens.txt
 ```
 
-## Notes
+#### The Tokens
 
-The process will probably fail at some point, but a `checkpoint.txt` file will be created to track progress. Run the generate command again, and it will continue
-from where it left off.  
+All of the tokens generated during this process are saved in `data/tokens.txt`. Keep this file,
+as you will need to send it to the scrutineers to verify the votes.
 
-If you send out a test email and want to test again, but nothing happens, delete `checkpoint.txt` and try again.
+## Notes: Checkpoints
+
+A `checkpoint.txt` file will be created to track progress.
+
+- The process will probably fail at some point, but `checkpoint.txt` will track progress.
+Run the `generate` command again, and it will continue from where it left off.  
+
+- If you send out a test email and want to test again, but nothing happens, remember to
+delete `checkpoint.txt` and try again.
 
 ## License
 

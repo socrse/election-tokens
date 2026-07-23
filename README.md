@@ -16,11 +16,33 @@ poetry install
 
 ## Usage
 
-First, export the membership list from WildApricot and then run the following command to filter the results:
+Generating the election tokens is a two-step process.
+
+### Step 1: Preparing the Membership Data
+
+First, export the membership list from WildApricot. 
+
+- Go to `Members -> Summary -> Export All`.
+- Make sure the First Name, Last Name, Email and Membership status fields are selected.
+- Click Export
+
+This will generate and download an XLS file with all the members' details in it.
+
+- Open the XLS file in Excel and save it as a CSV file.
+- Copy the CSV file into the `data` folder.
+- Rename it to something like `members.csv` for simplicity 
+
+Next, run the following command to filter the results:
 
 ```bash
-poetry run election-tokens filter-wildapricot --people [members.csv] -o subs.csv
+poetry run election-tokens filter-wildapricot --people data/members.csv -o data/subs.csv
 ```
+
+This will output a CSV file into data/subs.csv containing the list of full names and email addresses 
+for all valid members who are eligible to vote. This data is then used by the next step to generate
+tokens and send out the emails.
+
+### Step 2: Generate Tokens and Send Emails
 
 Then copy and fill in the example `settings.ini` file.
 The missing values are the email address and name of the sender, and an email password.

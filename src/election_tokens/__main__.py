@@ -79,7 +79,7 @@ def filter_wildapricot(people_file: pathlib.Path, output_file: pathlib.Path):
     members = members[['Name', 'Email']]
 
     logger.info('Found %d valid memberships', len(members))
-    members.to_csv(output_file, index=False, encoding='utf-16')  #TODO don't overwrite
+    members.to_csv(output_file, index=False, encoding='utf-8')  #TODO don't overwrite
 
 
 @cli.command()
@@ -105,7 +105,7 @@ def generate(email_file: pathlib.Path,
                             config('SENDER_NAME'),
                             pathlib.Path('templates'))
 
-    with sender, open(email_file, 'r', encoding='utf-16') as f_in, open(token_file, 'a', encoding='utf-16') as f_out:
+    with sender, open(email_file, 'r', encoding='utf-8') as f_in, open(token_file, 'a', encoding='utf-8') as f_out:
         # Shuffle list so output tokens list can't be linked
         rows = list(csv.DictReader(f_in))
         random.shuffle(rows)
